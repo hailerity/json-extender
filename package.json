@@ -1,5 +1,5 @@
 {
-  "name": "jsonextend",
+  "name": "json-extender",
   "version": "0.1.0",
   "description": "Immutable JSON patch DSL with extend, prepend, append, replace, and remove operators.",
   "license": "MIT",
@@ -8,13 +8,13 @@
     "email": "hailerity@gmail.com",
     "url": "https://github.com/hailerity"
   },
-  "homepage": "https://github.com/hailerity/jsonextend#readme",
+  "homepage": "https://github.com/hailerity/json-extender#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hailerity/jsonextend.git"
+    "url": "git+https://github.com/hailerity/json-extender.git"
   },
   "bugs": {
-    "url": "https://github.com/hailerity/jsonextend/issues"
+    "url": "https://github.com/hailerity/json-extender/issues"
   },
   "type": "module",
   "main": "./dist/index.cjs",

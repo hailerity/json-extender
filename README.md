@@ -1,8 +1,8 @@
-# jsonextend
+# json-extender
 
-[![npm version](https://img.shields.io/npm/v/jsonextend.svg)](https://www.npmjs.com/package/jsonextend)
-[![npm downloads](https://img.shields.io/npm/dm/jsonextend.svg)](https://www.npmjs.com/package/jsonextend)
-[![license](https://img.shields.io/github/license/hailerity/jsonextend.svg)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/json-extender.svg)](https://www.npmjs.com/package/json-extender)
+[![npm downloads](https://img.shields.io/npm/dm/json-extender.svg)](https://www.npmjs.com/package/json-extender)
+[![license](https://img.shields.io/github/license/hailerity/json-extender.svg)](LICENSE)
 
 Custom JSON patch processor that keeps your data immutable while supporting a lightweight DSL for nested objects and arrays.
 
@@ -16,11 +16,11 @@ Custom JSON patch processor that keeps your data immutable while supporting a li
 ## Installation
 
 ```bash
-npm install jsonextend
+npm install json-extender
 # or
-pnpm add jsonextend
+pnpm add json-extender
 # or
-yarn add jsonextend
+yarn add json-extender
 ```
 
 ## Usage
