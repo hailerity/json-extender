@@ -29,6 +29,10 @@ type ObjectPatch = PlainObject & {
   readonly $extend?: PlainObject;
 };
 
+export interface JsonExtendOptions {
+  readonly mutate?: boolean;
+}
+
 const ARRAY_OPERATOR_KEYS = new Set<keyof ArrayPatch>([
   '$prepend',
   '$append',
@@ -173,15 +177,73 @@ const applyNode = (target: unknown, patch: unknown): unknown => {
   return cloneValue(patch);
 };
 
-export const jsonExtend = <T>(target: T, patch: unknown): T => {
+const syncArrays = (target: unknown[], source: unknown[]): unknown[] => {
+  target.length = 0;
+  for (const item of source) {
+    target.push(item);
+  }
+  return target;
+};
+
+const syncPlainObjects = (target: PlainObject, source: PlainObject): PlainObject => {
+  for (const key of Object.keys(target)) {
+    if (!Object.prototype.hasOwnProperty.call(source, key)) {
+      delete target[key];
+    }
+  }
+
+  for (const [key, value] of Object.entries(source)) {
+    const current = target[key];
+
+    if (isPlainObject(value) && isPlainObject(current)) {
+      syncPlainObjects(current, value);
+      continue;
+    }
+
+    if (Array.isArray(value) && Array.isArray(current)) {
+      syncArrays(current, value);
+      continue;
+    }
+
+    target[key] = value;
+  }
+
+  return target;
+};
+
+const applyPatch = (target: unknown, patch: unknown): unknown => {
   if (!isPlainObject(patch)) {
-    return cloneValue(patch) as T;
+    return cloneValue(patch);
   }
 
   if (!isPlainObject(target)) {
-    return mergeObjects({}, patch) as T;
+    return mergeObjects({}, patch);
   }
 
-  return mergeObjects(target, patch) as T;
+  return mergeObjects(target, patch);
+};
+
+export const jsonExtend = <T>(
+  target: T,
+  patch: unknown,
+  options?: JsonExtendOptions
+): T => {
+  const result = applyPatch(target, patch) as T;
+
+  if (!options?.mutate) {
+    return result;
+  }
+
+  if (Array.isArray(target) && Array.isArray(result)) {
+    syncArrays(target, result);
+    return target;
+  }
+
+  if (isPlainObject(target) && isPlainObject(result)) {
+    syncPlainObjects(target, result);
+    return target;
+  }
+
+  return result;
 };
 

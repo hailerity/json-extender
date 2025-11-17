@@ -26,7 +26,7 @@ yarn add json-extender
 ## Usage
 
 ```ts
-import { jsonExtend } from 'jsonextend';
+import { jsonExtend } from 'json-extender';
 
 const result = jsonExtend(
   {
@@ -44,6 +44,17 @@ console.log(result);
 //   profile: { name: 'Ada', tags: ['math'], company: 'Analytical Engines' },
 //   list: [1, 2, 3, 4]
 // }
+```
+
+### Mutating vs. immutable mode
+
+By default, `jsonExtend` returns a new object, leaving the input untouched. Pass `{ mutate: true }` as the third argument to update the original structure (and its nested arrays) in place:
+
+```ts
+const state = { list: [1, 2] };
+jsonExtend(state, { list: { $append: [3] } }, { mutate: true });
+
+console.log(state.list); // [1, 2, 3]
 ```
 
 Array operators accept inline predicates or mapping functions:

@@ -152,5 +152,28 @@ describe('jsonExtend', () => {
     expect(target).toEqual({ nested: { list: [1, 2] } });
     expect(result.nested).not.toBe(target.nested);
   });
+
+  it('mutates the original object when mutate option is enabled', () => {
+    const target = { nested: { list: [1, 2] } };
+    const result = jsonExtend(
+      target,
+      { nested: { $extend: { flag: true } } },
+      { mutate: true }
+    );
+
+    expect(result).toBe(target);
+    expect(target).toEqual({ nested: { list: [1, 2], flag: true } });
+    expect(target.nested.list).toBe(result.nested.list);
+  });
+
+  it('mutates arrays in place when mutate option is enabled', () => {
+    const list = [1, 2];
+    const target = { list };
+
+    jsonExtend(target, { list: { $append: [3] } }, { mutate: true });
+
+    expect(target.list).toBe(list);
+    expect(target.list).toEqual([1, 2, 3]);
+  });
 });
 
