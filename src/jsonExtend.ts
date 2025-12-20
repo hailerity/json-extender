@@ -15,15 +15,35 @@ type ReplacementValue =
       array: readonly unknown[]
     ) => unknown | readonly unknown[]);
 
-type ArrayPatch = {
-  readonly $prepend?: readonly unknown[];
-  readonly $append?: readonly unknown[];
-  readonly $remove?: ArrayPredicate;
+export type JsonArrayPatch<T> = {
+  readonly $prepend?: readonly JsonExtendable<T>[];
+  readonly $append?: readonly JsonExtendable<T>[];
+  readonly $remove?: (item: T, index: number, array: readonly T[]) => boolean;
   readonly $replace?: readonly {
-    readonly filter: ArrayPredicate;
-    readonly replacement: ReplacementValue;
+    readonly filter: (item: T, index: number, array: readonly T[]) => boolean;
+    readonly replacement:
+      | JsonExtendable<T>
+      | readonly JsonExtendable<T>[]
+      | ((
+          item: T,
+          index: number,
+          array: readonly T[]
+        ) => JsonExtendable<T> | readonly JsonExtendable<T>[]);
   }[];
 };
+
+export type JsonExtendable<T> = T extends readonly (infer U)[]
+  ? JsonArrayPatch<U> | readonly JsonExtendable<U>[]
+  : T extends object
+  ? ({
+      readonly [K in keyof T]?: JsonExtendable<T[K]>;
+    } & {
+      readonly $extend?: JsonExtendable<T>;
+      readonly $override?: JsonExtendable<T>;
+    } & Record<string, any>) | string | number | boolean | null | undefined
+  : any;
+
+type ArrayPatch = JsonArrayPatch<unknown>;
 
 type ObjectPatch = PlainObject & {
   readonly $extend?: PlainObject;
@@ -228,7 +248,7 @@ const applyPatch = (target: unknown, patch: unknown): unknown => {
 
 export const jsonExtend = <T>(
   target: T,
-  patch: unknown,
+  patch: JsonExtendable<T>,
   options?: JsonExtendOptions
 ): T => {
   const result = applyPatch(target, patch) as T;

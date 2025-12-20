@@ -1,2 +1,2 @@
-export { jsonExtend } from './jsonExtend.js';
+export { jsonExtend, type JsonArrayPatch, type JsonExtendable } from './jsonExtend.js';
 
