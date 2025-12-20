@@ -1,6 +1,6 @@
 {
   "name": "json-extender",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Immutable JSON patch DSL with extend, prepend, append, replace, and remove operators.",
   "license": "MIT",
   "author": {
