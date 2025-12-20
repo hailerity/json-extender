@@ -16,6 +16,128 @@ describe('jsonExtend', () => {
     expect(result).toEqual({ config: { a: 1, b: 2 } });
   });
 
+  it('extends nested objects by default without $extend', () => {
+    const result = jsonExtend(
+      {
+        name: 'example',
+        profile: {
+          avatar: 'default.png',
+          settings: {
+            notifications: true,
+          },
+        },
+      },
+      {
+        profile: {
+          settings: {
+            zone: 'UTC',
+          }
+        }
+      }
+    );
+
+    expect(result).toEqual({
+      name: 'example',
+      profile: {
+        avatar: 'default.png',
+        settings: {
+          notifications: true,
+          zone: 'UTC',
+        },
+      }
+    });
+  });
+
+  it('overrides objects with $override', () => {
+    const result = jsonExtend(
+      {
+        name: 'example',
+        profile: {
+          avatar: 'default.png',
+          settings: {
+            notifications: true,
+          },
+        },
+      },
+      {
+        profile: {
+          $override: {
+            settings: {
+              zone: 'UTC',
+            }
+          }
+        }
+      }
+    );
+
+    expect(result).toEqual({
+      name: 'example',
+      profile: {
+        settings: {
+          notifications: true,
+          zone: 'UTC',
+        },
+      }
+    });
+  });
+
+  it('clears all properties when $override is an empty object', () => {
+    const result = jsonExtend(
+      { a: 1, b: { c: 2 } },
+      { $override: {} }
+    );
+
+    expect(result).toEqual({});
+  });
+
+  it('works when target is not a plain object', () => {
+    const result = jsonExtend(
+      "some string",
+      { $override: { newKey: 'value' } }
+    );
+
+    expect(result).toEqual({ newKey: 'value' });
+  });
+
+  it('handles deeply nested $override operators', () => {
+    const result = jsonExtend(
+      {
+        a: { b: 1, c: 2 },
+        d: { e: 3, f: 4 }
+      },
+      {
+        a: { $override: { b: 10 } },
+        d: { $extend: { g: 5 } }
+      }
+    );
+
+    expect(result).toEqual({
+      a: { b: 10 }, // 'c' is removed
+      d: { e: 3, f: 4, g: 5 } // 'e' and 'f' are kept
+    });
+  });
+
+  it('throws when $override is not a plain object', () => {
+    expect(() =>
+      jsonExtend(
+        { a: 1 },
+        { $override: 123 } as any
+      )
+    ).toThrow('$override expects a plain object');
+  });
+
+  it('merges peer properties after applying $override', () => {
+    const result = jsonExtend(
+      { a: 1, b: 2 },
+      {
+        $override: { c: 3 },
+        d: 4
+      }
+    );
+
+    expect(result).toEqual({ c: 3, d: 4 }); // 'a' and 'b' are removed by $override, then 'd' is added
+  });
+
   it('supports $prepend and $append for arrays', () => {
     const result = jsonExtend(
       { list: [2, 3] },

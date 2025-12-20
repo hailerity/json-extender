@@ -9,7 +9,7 @@ Custom JSON patch processor that keeps your data immutable while supporting a li
 ## Features
 
 - TypeScript-first codebase with strict checks.
-- `$extend`, `$prepend`, `$append`, `$remove`, and `$replace` operators.
+- `$extend`, `$override`, `$prepend`, `$append`, `$remove`, and `$replace` operators.
 - Works on plain JSON data but keeps user-provided predicates or mappers callable.
 - Dual ESM/CJS outputs via `tsup`.
 
@@ -85,6 +85,31 @@ jsonExtend(
   { profile: { $extend: { links: { twitter: '@ada' } } } }
 );
 // → { profile: { name: 'Ada', links: { github: '@ada', twitter: '@ada' } } }
+```
+
+### `$override` – replace object properties
+
+- **Use when:** You want to replace the keys of an object with new ones, effectively removing keys not in the patch.
+- **Behavior:** Replaces the target object's keys with those in the `$override` value. Properties that are present in both the target and the patch are merged recursively.
+- **Example:**
+
+```ts
+jsonExtend(
+  { profile: { name: 'Ada', avatar: 'ada.png' } },
+  { profile: { $override: { company: 'Analytical Engines' } } }
+);
+// → { profile: { company: 'Analytical Engines' } }
+// Note: 'name' and 'avatar' are removed.
+```
+
+If properties overlap, they are still merged:
+
+```ts
+jsonExtend(
+  { settings: { theme: 'dark', notifications: true } },
+  { settings: { $override: { theme: 'light' } } }
+);
+// → { settings: { theme: 'light' } }
 ```
 
 ### `$prepend` – add items to the beginning of an array

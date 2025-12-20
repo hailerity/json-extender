@@ -27,6 +27,7 @@ type ArrayPatch = {
 
 type ObjectPatch = PlainObject & {
   readonly $extend?: PlainObject;
+  readonly $override?: PlainObject;
 };
 
 export interface JsonExtendOptions {
@@ -40,7 +41,7 @@ const ARRAY_OPERATOR_KEYS = new Set<keyof ArrayPatch>([
   '$replace'
 ]);
 
-const OBJECT_OPERATOR_KEYS = new Set<keyof ObjectPatch>(['$extend']);
+const OBJECT_OPERATOR_KEYS = new Set<keyof ObjectPatch>(['$extend', '$override']);
 
 const isPlainObject = (value: unknown): value is PlainObject =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -121,13 +122,17 @@ const applyArrayPatch = (target: unknown, patch: ArrayPatch): unknown[] => {
   return result;
 };
 
-const mergeObjects = (target: unknown, patch: PlainObject): PlainObject => {
+const mergeObjects = (
+  target: unknown,
+  patch: PlainObject,
+  options?: { override?: boolean }
+): PlainObject => {
   const targetObject = isPlainObject(target) ? target : {};
   const result: PlainObject = {};
-  const keys = new Set([
-    ...Object.keys(targetObject),
-    ...Object.keys(patch)
-  ]);
+
+  const keys = options?.override
+    ? new Set(Object.keys(patch))
+    : new Set([...Object.keys(targetObject), ...Object.keys(patch)]);
 
   for (const key of keys) {
     if (Object.prototype.hasOwnProperty.call(patch, key)) {
@@ -144,7 +149,13 @@ const applyObjectPatch = (target: unknown, patch: ObjectPatch): PlainObject => {
   const { operators, rest } = extractObjectOperators(patch);
   let base = isPlainObject(target) ? target : {};
 
-  if (operators.$extend) {
+  if (operators.$override) {
+    if (!isPlainObject(operators.$override)) {
+      throw new TypeError('$override expects a plain object');
+    }
+
+    base = mergeObjects(base, operators.$override, { override: true });
+  } else if (operators.$extend) {
     if (!isPlainObject(operators.$extend)) {
       throw new TypeError('$extend expects a plain object');
     }
@@ -212,15 +223,7 @@ const syncPlainObjects = (target: PlainObject, source: PlainObject): PlainObject
 };
 
 const applyPatch = (target: unknown, patch: unknown): unknown => {
-  if (!isPlainObject(patch)) {
-    return cloneValue(patch);
-  }
-
-  if (!isPlainObject(target)) {
-    return mergeObjects({}, patch);
-  }
-
-  return mergeObjects(target, patch);
+  return applyNode(target, patch);
 };
 
 export const jsonExtend = <T>(
